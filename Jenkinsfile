@@ -1,13 +1,5 @@
 pipeline {
   agent any
-  stage('Clean') {
-	   steps {
-			echo 'Project Cleaning stage'
-			bat label: 'Cleaning', script: '''mvn clean'''
-	       
-       		}
-   	}
-   	
   stages {	
 	stage('Maven Compile'){
 		steps{
@@ -23,20 +15,30 @@ pipeline {
 	       
        		}
    	}
-   	
-   	
-   	stage('Build') {
-	   steps {
-			echo 'Project Testing stage'
-			bat label: 'Test Building', script: '''mvn build'''
-	       
-       		}
-   	}
 
-	 
-   
+	stage('Jacoco Coverage Report') {
+        	steps{
+            		jacoco()
+		}
+	} 
+	  
+	stage('SonarQube'){
+		steps{
+				bat label: '', script: '''mvn sonar:sonar \
+				-Dsonar.host.url=http://localhost:9000 \
+				-Dsonar.login=cc8d470e077d8ff83a626d6100581fc224644196'''
+			}
+   		}
 
-			
+	    
+       
+		
+	stage('Maven Package'){
+		steps{
+			echo 'Project packaging stage'
+			bat label: 'Project packaging', script: '''mvn package'''
+		}
+	} 		
     
   }
 }
